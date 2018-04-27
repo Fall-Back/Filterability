@@ -151,7 +151,8 @@
                 }
             });
         },
-
+        
+        // Allow user-selected indexes:
         toggle_index: function(group, index_name) {
             var items = group.querySelectorAll('[filterable_index_name]');
 
@@ -168,8 +169,10 @@
         },
         
         highlight_results: function(item, query) {
+            console.log(item);
+            console.log(query);
             if (window.Mark) {
-                var markInstance = new Mark(item);
+                var markInstance = new Mark(item.querySelectorAll('[filterable_index], [filterable_index_name]'));
                 markInstance.unmark({
                     done: function(){
                         markInstance.mark(query);
