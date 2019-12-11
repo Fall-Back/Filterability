@@ -65,33 +65,77 @@
 
 
                 // Toggler stuff:
-                var els = filterable_group.querySelector('[filterable_item]').querySelectorAll('[filterable_index_name]');
-                filterability.filterable_index_names = Array.prototype.map.call(els, function(obj) {
-                    return obj.getAttribute('filterable_index_name');
-                });
-
                 var filterable_toggles = filterable_group.querySelectorAll('[filterable_toggle]');
-                Array.prototype.forEach.call(filterable_toggles, function(filterable_toggle, i) {
-                    var el_tagName = filterable_toggle.tagName.toLowerCase();
-                    var el_type = filterable_toggle.type;
-                    if (el_type) {
-                        el_type = el_type.toLowerCase();
-                    }
-                    // Check element is of valid / supported type:
-                    if (el_tagName == 'select' || (el_tagName == 'input' && ['checkbox', 'radio'].indexOf(el_type) > -1)) {
-                        // Check if the value matches the ones available in the data (or empty string for ALL):
-                        if (
-							filterability.filterable_index_names.indexOf(filterable_toggle.getAttribute('filterable_toggle')) > -1
-						 || filterable_toggle.getAttribute('filterable_toggle') == ''
-						) {
-                            filterable_toggle.addEventListener('change', function(){
-                                filterability.toggle_index(filterable_group, this.getAttribute('filterable_toggle'));
-                                filterability.generateIndex(filterable_group);
-                                filterability.filterList(filterable_group, filterable_input.value);
-                            });
+
+                if (filterable_toggles.length > 0) {
+                    var els = filterable_group.querySelector('[filterable_item]').querySelectorAll('[filterable_index_name]');
+                    filterability.filterable_index_names = Array.prototype.map.call(els, function(obj) {
+                        return obj.getAttribute('filterable_index_name');
+                    });
+
+                    Array.prototype.forEach.call(filterable_toggles, function(filterable_toggle, i) {
+                        var el_tagName = filterable_toggle.tagName.toLowerCase();
+                        var el_type = filterable_toggle.type;
+                        if (el_type) {
+                            el_type = el_type.toLowerCase();
                         }
-                    }
-                });
+                        // Check element is of valid / supported type:
+                        if (el_tagName == 'select' || (el_tagName == 'input' && ['checkbox', 'radio'].indexOf(el_type) > -1)) {
+                            // Check if the value matches the ones available in the data (or empty string for ALL):
+                            if (
+                                filterability.filterable_index_names.indexOf(filterable_toggle.getAttribute('filterable_toggle')) > -1
+                             || filterable_toggle.getAttribute('filterable_toggle') == ''
+                            ) {
+                                filterable_toggle.addEventListener('change', function(){
+                                    filterability.toggle_index(filterable_group, this.getAttribute('filterable_toggle'));
+                                    filterability.generateIndex(filterable_group);
+                                    filterability.filterList(filterable_group, filterable_input.value);
+                                });
+                            }
+                        }
+                    });
+
+                }
+
+
+                // Exclusion stuff:
+                var excludable_toggles = filterable_group.querySelectorAll('[filterable_exclude_container][filterable_exclude_match]');
+
+                if (excludable_toggles.length > 0) {
+                    Array.prototype.forEach.call(excludable_toggles, function(excludable_toggle, i) {
+                        var el_tagName = excludable_toggle.tagName.toLowerCase();
+                        var el_type = excludable_toggle.type;
+                        if (el_type) {
+                            el_type = el_type.toLowerCase();
+                        }
+                        // Check element is of valid / supported type:
+                        if (el_tagName == 'input' && ['checkbox'].indexOf(el_type) > -1) {
+                            excludable_toggle.addEventListener('change', function(){
+
+                                // Find the element the toggle corresponds to:
+                                var ex_els = filterable_group.querySelectorAll(this.getAttribute('filterable_exclude_container'));
+                                var is_checked = this.checked;
+                                var ex_match = this.getAttribute('filterable_exclude_match');
+                                Array.prototype.forEach.call(ex_els, function(ex_el, i) {
+
+                                    var re = new RegExp(ex_match);
+                                    var match = re.exec(ex_el.innerHTML);
+                                    if (match !== null) {
+                                        var parent_filterable_item = filterability.closest(ex_el, '[filterable_item]', '[filterable_list]');
+                                        if (is_checked) {
+                                            parent_filterable_item.removeAttribute('hidden');
+                                        } else {
+                                            parent_filterable_item.setAttribute('hidden', '');
+                                        }
+                                    }
+                                });
+
+                                filterability.checkListEmpty(filterable_group);
+                            });
+
+                        }
+                    });
+                }
             });
 
         },
@@ -111,7 +155,7 @@
                         index_string += index.textContent + ' ';
                     });
                 }
-                
+
                 item.setAttribute('filterable_index_string', index_string.toLowerCase().trim());
             });
         },
@@ -128,13 +172,17 @@
                     if (group.getAttribute('filterable_mark_results') === '') {
                         filterability.highlight_results(item, query);
                     }
-                    
+
                 } else {
                     item.setAttribute('hidden', '');
                 }
             });
 
 
+            filterability.checkListEmpty(group);
+        },
+
+        checkListEmpty: function(group) {
             // After filtering, if a list is empty, show the 'empty' message:
             var lists = group.querySelectorAll('[filterable_list]');
             Array.prototype.forEach.call(lists, function(list, i) {
@@ -151,7 +199,7 @@
                 }
             });
         },
-        
+
         // Allow user-selected indexes:
         toggle_index: function(group, index_name) {
             var items = group.querySelectorAll('[filterable_index_name]');
@@ -167,10 +215,8 @@
                 }
             });
         },
-        
+
         highlight_results: function(item, query) {
-            console.log(item);
-            console.log(query);
             if (window.Mark) {
                 var markInstance = new Mark(item.querySelectorAll('[filterable_index], [filterable_index_name]'));
                 markInstance.unmark({
@@ -184,6 +230,20 @@
                     filterability.markjs_error_raised = true;
                 }
             }
+        },
+
+        closest: function(el, selector, stopSelector) {
+            var retval = null;
+            while (el) {
+                if (el.matches(selector)) {
+                    retval = el;
+                    break;
+                } else if (stopSelector && el.matches(stopSelector)) {
+                    break;
+                }
+                el = el.parentElement;
+            }
+            return retval;
         }
 	}
 
