@@ -37,10 +37,31 @@
 
 				// Expose the form if necessary:
 				var filterable_form_template = filterable_group.querySelector('[filterable_form_template]');
+                var form_added = false;
 				if (filterable_form_template) {
 					filterable_form = filterable_form_template.innerHTML;
-					filterable_form_template.insertAdjacentHTML('afterend', filterable_form);
+                    
+                    // Check for a replace selector, and put the form there, otherwise keep it in
+                    // place:
+                    var replace_selector = filterable_group.getAttribute('filterable_replace');
+                    if (replace_selector) {
+                        var replace_el = document.querySelector(replace_selector);
+                        var form_el = document.createElement('div');
+                        form_el.id  = 'filerable_form_' + i;
+                        form_el.innerHTML = filterable_form;
+                        if (replace_el.parentNode.replaceChild(form_el, replace_el)) {
+                            form_added = form_el.id;
+                        }
+                    } else {
+                    	filterable_form_template.insertAdjacentHTML('afterend', filterable_form);
+                        form_added = true;
+                    }
 				}
+                
+                // If the form hasn't been added, we can't go any further.
+                if (!form_added) {
+                    return;
+                }
 
                 // Generate initial indexes:
                 filterability.generateIndex(filterable_group);
@@ -64,13 +85,24 @@
                 Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
                     filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
                 });
+                
+                if (typeof form_added  == 'string') {
+                    var filterable_form = document.querySelector('#' + form_added);
+                } else {
+                    var filterable_form = filterable_group;
+                }
+                
+                if (!filterable_form) {
+                    console.error('Could not find form.');
+                    return;
+                }
 
                 // Get the input:
-                var filterable_input = filterable_group.querySelector('[filterable_input]');
+                var filterable_input = filterable_form.querySelector('[filterable_input]');
                 
                 // Check for presence of a submit button:
-                var filterable_submit = filterable_group.querySelector('[filterable_submit]');
-                
+                var filterable_submit = filterable_form.querySelector('[filterable_submit]');
+
                 // If there is one, we want to attach the hander, otherwise, filter on keyup:
                 if (filterable_submit) {
                     filterable_submit.addEventListener('click', function(e) {
