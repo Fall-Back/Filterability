@@ -47,7 +47,7 @@
                     if (replace_selector) {
                         var replace_el = document.querySelector(replace_selector);
                         var form_el = document.createElement('div');
-                        form_el.id  = 'filerable_form_' + i;
+                        form_el.id  = 'filterable_form_' + i;
                         form_el.innerHTML = filterable_form;
                         if (replace_el.parentNode.replaceChild(form_el, replace_el)) {
                             form_added = form_el.id;
