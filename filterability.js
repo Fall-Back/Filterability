@@ -172,31 +172,8 @@
                         // Check element is of valid / supported type:
                         if (el_tagName == 'input' && ['checkbox'].indexOf(el_type) > -1) {
                             excludable_toggle.addEventListener('change', function() {
-
                                 filterability.update_exclusions(filterable_group, filterable_form);
-                                /*
-                                // Find the element the toggle corresponds to:
-                                var ex_els = filterable_group.querySelectorAll(this.getAttribute('filterable_exclude_container'));
-                                var is_checked = this.checked;
-                                var ex_match = this.getAttribute('filterable_exclude_match');
-                                Array.prototype.forEach.call(ex_els, function(ex_el, i) {
-
-                                    var re = new RegExp(ex_match);
-                                    var match = re.exec(ex_el.innerHTML);
-                                    if (match !== null) {
-                                        var parent_filterable_item = filterability.closest(ex_el, '[filterable_item]', '[filterable_list]');
-                                        if (is_checked) {
-                                            parent_filterable_item.removeAttribute('hidden');
-                                        } else {
-                                            parent_filterable_item.setAttribute('hidden', '');
-                                        }
-                                    }
-                                });
-
-                                filterability.checkListEmpty(filterable_group);
-                                */
                             });
-
                         }
                     });
                 }
