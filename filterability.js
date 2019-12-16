@@ -11,9 +11,9 @@
         } else {
             document.addEventListener('DOMContentLoaded', fn);
         }
-    }
+    };
 
-	var filterability = {
+    var filterability = {
 
         markjs_error_raised: false,
         filterable_index_names: [],
@@ -35,11 +35,12 @@
                     });
                 }
 
-				// Expose the form if necessary:
-				var filterable_form_template = filterable_group.querySelector('[filterable_form_template]');
+                // Expose the form if necessary:
+                var filterable_form_template = filterable_group.querySelector('[filterable_form_template]');
+                var filterable_form;
                 var form_added = false;
-				if (filterable_form_template) {
-					filterable_form = filterable_form_template.innerHTML;
+                if (filterable_form_template) {
+                    filterable_form = filterable_form_template.innerHTML;
 
                     // Check for a replace selector, and put the form there, otherwise keep it in
                     // place:
@@ -53,10 +54,10 @@
                             form_added = form_el.id;
                         }
                     } else {
-                    	filterable_form_template.insertAdjacentHTML('afterend', filterable_form);
+                        filterable_form_template.insertAdjacentHTML('afterend', filterable_form);
                         form_added = true;
                     }
-				}
+                }
 
                 // If the form hasn't been added, we can't go any further.
                 if (!form_added) {
@@ -68,28 +69,29 @@
 
 
                 // Add the empty message to each list:
-				var filterable_empty_list_template = filterable_group.querySelector('[filterable_empty_list_template]');
-				if (filterable_empty_list_template) {
-					filterable_empty_list = filterable_empty_list_template.innerHTML;
-				} else {
-					// Might as well provide a default:
-					var filterable_empty_list_message = 'No matches found.';
-					var filterable_empty_list_element = document.createElement('p');
-					filterable_empty_list_element.textContent = filterable_empty_list_message;
-					filterable_empty_list_element.setAttribute('filterable_empty_list_message', '')
-					filterable_empty_list_element.setAttribute('hidden', '');
-					filterable_empty_list = filterable_empty_list_element.outerHTML;
-				}
+                var filterable_empty_list_template = filterable_group.querySelector('[filterable_empty_list_template]');
+                var filterable_empty_list;
+                if (filterable_empty_list_template) {
+                    filterable_empty_list = filterable_empty_list_template.innerHTML;
+                } else {
+                    // Might as well provide a default:
+                    var filterable_empty_list_message = 'No matches found.';
+                    var filterable_empty_list_element = document.createElement('p');
+                    filterable_empty_list_element.textContent = filterable_empty_list_message;
+                    filterable_empty_list_element.setAttribute('filterable_empty_list_message', '');
+                    filterable_empty_list_element.setAttribute('hidden', '');
+                    filterable_empty_list = filterable_empty_list_element.outerHTML;
+                }
 
                 var filterable_lists = filterable_group.querySelectorAll('[filterable_list]');
                 Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
                     filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
                 });
 
-                if (typeof form_added  == 'string') {
-                    var filterable_form = document.querySelector('#' + form_added);
+                if (typeof form_added  === 'string') {
+                    filterable_form = document.querySelector('#' + form_added);
                 } else {
-                    var filterable_form = filterable_group;
+                    filterable_form = filterable_group;
                 }
 
                 if (!filterable_form) {
@@ -139,11 +141,11 @@
                             el_type = el_type.toLowerCase();
                         }
                         // Check element is of valid / supported type:
-                        if (el_tagName == 'select' || (el_tagName == 'input' && ['checkbox', 'radio'].indexOf(el_type) > -1)) {
+                        if (el_tagName === 'select' || (el_tagName === 'input' && ['checkbox', 'radio'].indexOf(el_type) > -1)) {
                             // Check if the value matches the ones available in the data (or empty string for ALL):
                             if (
                                 filterability.filterable_index_names.indexOf(filterable_toggle.getAttribute('filterable_toggle')) > -1
-                             || filterable_toggle.getAttribute('filterable_toggle') == ''
+                             || filterable_toggle.getAttribute('filterable_toggle') === ''
                             ) {
                                 filterable_toggle.addEventListener('change', function() {
                                     filterability.toggle_index(filterable_group, this.getAttribute('filterable_toggle'));
@@ -170,7 +172,7 @@
                             el_type = el_type.toLowerCase();
                         }
                         // Check element is of valid / supported type:
-                        if (el_tagName == 'input' && ['checkbox'].indexOf(el_type) > -1) {
+                        if (el_tagName === 'input' && ['checkbox'].indexOf(el_type) > -1) {
                             excludable_toggle.addEventListener('change', function() {
                                 filterability.update_exclusions(filterable_group, filterable_form);
                             });
@@ -204,22 +206,23 @@
                         group.exclusions.keys.push(container_name);
                     }
                 });
-                
+
                 var filterable_input = form.querySelector('[filterable_input]');
                 filterability.filterList(group, filterable_input.value);
-            };
+            }
         },
 
         generateIndex: function(group) {
             var items = group.items;
+            var index_string;
             Array.prototype.forEach.call(items, function(item, i){
                 if (item.getAttribute('filterable_index') === '') {
-                    var index_string = item.textContent;
+                    index_string = item.textContent;
                 } else {
                     var indexes = item.querySelectorAll('[filterable_index]');
 
                     // @TODO: there's probably a more concise way of doing this. Need to ++ my JS. :-(
-                    var index_string = '';
+                    index_string = '';
 
                     Array.prototype.forEach.call(indexes, function(index, i) {
                         index_string += index.textContent + ' ';
@@ -236,7 +239,7 @@
             var items = group.items;
 
             Array.prototype.forEach.call(items, function(item, i) {
-                // Apply exclusions:                
+                // Apply exclusions:
                 var skip = false;
                 if (group.exclusions.length > 0) {
                     Array.prototype.forEach.call(group.exclusions.keys, function(ex_el_name) {
@@ -250,7 +253,7 @@
                         });
                     });
                 }
-                
+
                 item.removeAttribute('hidden');
                 if (skip) {
                     item.setAttribute('hidden', '');
@@ -280,7 +283,7 @@
             Array.prototype.forEach.call(lists, function(list, i) {
                 var list_is_empty = !list.querySelectorAll('[filterable_item]:not([hidden])').length;
                 var empty_message = list.nextElementSibling;
-				// @TODO: should probably check the we've really selected a `filterable_empty_list_message`
+                // @TODO: should probably check the we've really selected a `filterable_empty_list_message`
 
                 if (list_is_empty) {
                     list.setAttribute('hidden', '');
@@ -298,9 +301,9 @@
 
             Array.prototype.forEach.call(items, function(item, i) {
                 if (
-					item.getAttribute('filterable_index_name') == index_name
-				 || index_name == ''
-				) {
+                    item.getAttribute('filterable_index_name') === index_name
+                 || index_name === ''
+                ) {
                     item.setAttribute('filterable_index', '');
                 } else {
                     item.removeAttribute('filterable_index');
@@ -342,18 +345,23 @@
         debounce: function(func, wait, immediate) {
             var timeout;
             return function() {
-                var context = this, args = arguments;
+                var context = this;
+                var args = arguments;
                 var later = function() {
                     timeout = null;
-                    if (!immediate) func.apply(context, args);
+                    if (!immediate) {
+                        func.apply(context, args);
+                    }
                 };
                 var callNow = immediate && !timeout;
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
-                if (callNow) func.apply(context, args);
+                if (callNow) {
+                    func.apply(context, args);
+                }
             };
         }
-	}
+    };
 
-	ready(filterability.init);
+    ready(filterability.init);
 })();
