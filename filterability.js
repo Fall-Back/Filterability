@@ -40,7 +40,7 @@
                 var form_added = false;
 				if (filterable_form_template) {
 					filterable_form = filterable_form_template.innerHTML;
-                    
+
                     // Check for a replace selector, and put the form there, otherwise keep it in
                     // place:
                     var replace_selector = filterable_group.getAttribute('filterable_replace');
@@ -57,7 +57,7 @@
                         form_added = true;
                     }
 				}
-                
+
                 // If the form hasn't been added, we can't go any further.
                 if (!form_added) {
                     return;
@@ -85,13 +85,13 @@
                 Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
                     filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
                 });
-                
+
                 if (typeof form_added  == 'string') {
                     var filterable_form = document.querySelector('#' + form_added);
                 } else {
                     var filterable_form = filterable_group;
                 }
-                
+
                 if (!filterable_form) {
                     console.error('Could not find form.');
                     return;
@@ -99,7 +99,7 @@
 
                 // Get the input:
                 var filterable_input = filterable_form.querySelector('[filterable_input]');
-                
+
                 // Check for presence of a submit button:
                 var filterable_submit = filterable_form.querySelector('[filterable_submit]');
 
@@ -111,12 +111,12 @@
                         return false;
                     });
                 } else {
-                    
+
                     // Attach search input handler:
                     // @TODO: Could allow for different input actions to trigger this.
                     // E.g. user may want to choose from a list of predefined options by which to filter
                     // the list(s) so a select or checkbox change should work as well.
-                    
+
                     filterable_input.addEventListener('keyup', function() {
                         filterability.filterList(filterable_group, this.value);
                     });
@@ -124,7 +124,7 @@
 
 
                 // Toggler stuff:
-                var filterable_toggles = filterable_group.querySelectorAll('[filterable_toggle]');
+                var filterable_toggles = filterable_form.querySelectorAll('[filterable_toggle]');
 
                 if (filterable_toggles.length > 0) {
                     var els = filterable_group.querySelector('[filterable_item]').querySelectorAll('[filterable_index_name]');
@@ -145,7 +145,7 @@
                                 filterability.filterable_index_names.indexOf(filterable_toggle.getAttribute('filterable_toggle')) > -1
                              || filterable_toggle.getAttribute('filterable_toggle') == ''
                             ) {
-                                filterable_toggle.addEventListener('change', function(){
+                                filterable_toggle.addEventListener('change', function() {
                                     filterability.toggle_index(filterable_group, this.getAttribute('filterable_toggle'));
                                     filterability.generateIndex(filterable_group);
                                     filterability.filterList(filterable_group, filterable_input.value);
@@ -158,7 +158,9 @@
 
 
                 // Exclusion stuff:
-                var excludable_toggles = filterable_group.querySelectorAll('[filterable_exclude_container][filterable_exclude_match]');
+                filterability.update_exclusions(filterable_group, filterable_form);
+
+                var excludable_toggles = filterable_form.querySelectorAll('[filterable_exclude_container][filterable_exclude_match]');
 
                 if (excludable_toggles.length > 0) {
                     Array.prototype.forEach.call(excludable_toggles, function(excludable_toggle, i) {
@@ -169,8 +171,10 @@
                         }
                         // Check element is of valid / supported type:
                         if (el_tagName == 'input' && ['checkbox'].indexOf(el_type) > -1) {
-                            excludable_toggle.addEventListener('change', function(){
+                            excludable_toggle.addEventListener('change', function() {
 
+                                filterability.update_exclusions(filterable_group, filterable_form);
+                                /*
                                 // Find the element the toggle corresponds to:
                                 var ex_els = filterable_group.querySelectorAll(this.getAttribute('filterable_exclude_container'));
                                 var is_checked = this.checked;
@@ -190,6 +194,7 @@
                                 });
 
                                 filterability.checkListEmpty(filterable_group);
+                                */
                             });
 
                         }
@@ -197,6 +202,35 @@
                 }
             });
 
+        },
+
+        update_exclusions: function(group, form) {
+            group.exclusions = {
+                length: 0,
+                keys: []
+            };
+            var excludable_toggles = form.querySelectorAll('[filterable_exclude_container][filterable_exclude_match]');
+
+            if (excludable_toggles.length > 0) {
+                Array.prototype.forEach.call(excludable_toggles, function(excludable_toggle, i) {
+
+                    if (!excludable_toggle.checked) {
+
+                        var container_name = excludable_toggle.getAttribute('filterable_exclude_container');
+
+                        if (group.exclusions[container_name] === undefined) {
+                            group.exclusions[container_name] = [];
+                        }
+
+                        group.exclusions[container_name].push(excludable_toggle.getAttribute('filterable_exclude_match'));
+                        group.exclusions.length++;
+                        group.exclusions.keys.push(container_name);
+                    }
+                });
+                
+                var filterable_input = form.querySelector('[filterable_input]');
+                filterability.filterList(group, filterable_input.value);
+            };
         },
 
         generateIndex: function(group) {
@@ -223,7 +257,29 @@
 
             query = query.toLowerCase().trim();
             var items = group.items;
-            Array.prototype.forEach.call(items, function(item, i){
+
+            Array.prototype.forEach.call(items, function(item, i) {
+                // Apply exclusions:                
+                var skip = false;
+                if (group.exclusions.length > 0) {
+                    Array.prototype.forEach.call(group.exclusions.keys, function(ex_el_name) {
+                        Array.prototype.forEach.call(group.exclusions[ex_el_name], function(ex_match) {
+                            var re = new RegExp(ex_match);
+                            var ex_el = item.querySelector(ex_el_name);
+                            var match = re.exec(ex_el.innerHTML);
+                            if (match !== null) {
+                                skip = true;
+                            }
+                        });
+                    });
+                }
+                
+                item.removeAttribute('hidden');
+                if (skip) {
+                    item.setAttribute('hidden', '');
+                    return;
+                }
+
                 if (item.getAttribute('filterable_index_string').indexOf(query) > -1) {
                     item.removeAttribute('hidden');
 
@@ -305,7 +361,7 @@
             }
             return retval;
         },
-        
+
         debounce: function(func, wait, immediate) {
             var timeout;
             return function() {
