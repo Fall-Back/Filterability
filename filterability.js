@@ -23,6 +23,18 @@
             var filterable_groups = document.querySelectorAll('[filterable_group]');
 
             Array.prototype.forEach.call(filterable_groups, function(filterable_group, i) {
+                // Store items:
+                filterable_group.items = filterable_group.querySelectorAll('[filterable_item]');
+
+                // Action 'remove' selector:
+                var remove_selector = filterable_group.getAttribute('filterable_remove');
+                if (remove_selector !== '') {
+                    var remove_els = document.querySelectorAll(remove_selector);
+                    Array.prototype.forEach.call(remove_els, function(remove_el, i) {
+                        remove_el.remove();
+                    });
+                }
+
 				// Expose the form if necessary:
 				var filterable_form_template = filterable_group.querySelector('[filterable_form_template]');
 				if (filterable_form_template) {
@@ -53,15 +65,30 @@
                     filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
                 });
 
-
-                // Attach search input handler:
-                // @TODO: Could allow for different input actions to trigger this.
-                // E.g. user may want to choose from a list of predefined options by which to filter
-                // the list(s) so a select or checkbox change should work as well.
+                // Get the input:
                 var filterable_input = filterable_group.querySelector('[filterable_input]');
-                filterable_input.addEventListener('keyup', function(){
-                    filterability.filterList(filterable_group, this.value);
-                });
+                
+                // Check for presence of a submit button:
+                var filterable_submit = filterable_group.querySelector('[filterable_submit]');
+                
+                // If there is one, we want to attach the hander, otherwise, filter on keyup:
+                if (filterable_submit) {
+                    filterable_submit.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        filterability.filterList(filterable_group, filterable_input.value);
+                        return false;
+                    });
+                } else {
+                    
+                    // Attach search input handler:
+                    // @TODO: Could allow for different input actions to trigger this.
+                    // E.g. user may want to choose from a list of predefined options by which to filter
+                    // the list(s) so a select or checkbox change should work as well.
+                    
+                    filterable_input.addEventListener('keyup', function() {
+                        filterability.filterList(filterable_group, this.value);
+                    });
+                }
 
 
                 // Toggler stuff:
@@ -141,7 +168,7 @@
         },
 
         generateIndex: function(group) {
-            var items = group.querySelectorAll('[filterable_item]');
+            var items = group.items;
             Array.prototype.forEach.call(items, function(item, i){
                 if (item.getAttribute('filterable_index') === '') {
                     var index_string = item.textContent;
@@ -163,14 +190,14 @@
         filterList: function(group, query) {
 
             query = query.toLowerCase().trim();
-            var items = group.querySelectorAll('[filterable_item]');
+            var items = group.items;
             Array.prototype.forEach.call(items, function(item, i){
                 if (item.getAttribute('filterable_index_string').indexOf(query) > -1) {
                     item.removeAttribute('hidden');
 
                     // Check we want to highlight results:
                     if (group.getAttribute('filterable_mark_results') === '') {
-                        filterability.highlight_results(item, query);
+                        filterability.debounce(filterability.highlight_results(item, query), 250);
                     }
 
                 } else {
@@ -217,6 +244,7 @@
         },
 
         highlight_results: function(item, query) {
+            // Note this can be really slow on large lists.
             if (window.Mark) {
                 var markInstance = new Mark(item.querySelectorAll('[filterable_index], [filterable_index_name]'));
                 markInstance.unmark({
@@ -244,6 +272,21 @@
                 el = el.parentElement;
             }
             return retval;
+        },
+        
+        debounce: function(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                var later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
         }
 	}
 
