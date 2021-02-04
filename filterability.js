@@ -13,7 +13,8 @@
         }
     };
 
-    var getParameterByName = function(name, url = window.location.href) {
+    var getParameterByName = function(name, url) {
+        url = (typeof url !== 'undefined') ?  url : window.location.href;
         name = name.replace(/[\[\]]/g, '\\$&');
         var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
             results = regex.exec(url);
