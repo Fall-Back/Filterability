@@ -13,6 +13,15 @@
         }
     };
 
+    var getParameterByName = function(name, url = window.location.href) {
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
     var filterability = {
 
         markjs_error_raised: false,
@@ -102,6 +111,15 @@
                 // Get the input:
                 var filterable_input = filterable_form.querySelector('[filterable_input]');
 
+                // Check if there's sessionStorage for the input and use that value:
+                filterable_input.value = window.sessionStorage.getItem(filterable_input.id);
+
+                // Check if there's a corresponding query string parameter and use that value:
+                var input_val;
+                if (input_val = getParameterByName(filterable_input.id)) {
+                    filterable_input.value = input_val;
+                }
+
                 // Check for presence of a submit button:
                 var filterable_submit = filterable_form.querySelector('[filterable_submit]');
 
@@ -109,6 +127,11 @@
                 if (filterable_submit) {
                     filterable_submit.addEventListener('click', function(e) {
                         e.preventDefault();
+
+                        // Add value to sessionStorage:
+                        window.sessionStorage.setItem(filterable_input.id, filterable_input.value);
+
+                        // Filter the list:
                         filterability.filterList(filterable_group, filterable_input.value);
                         return false;
                     });
@@ -119,8 +142,27 @@
                     // E.g. user may want to choose from a list of predefined options by which to filter
                     // the list(s) so a select or checkbox change should work as well.
 
+                    //filterable_input.addEventListener('keyup', function() {
                     filterable_input.addEventListener('keyup', function() {
+                        // Add value to sessionStorage:
+                        window.sessionStorage.setItem(filterable_input.id, this.value);
+
+                        // Filter the list:
                         filterability.filterList(filterable_group, this.value);
+                    });
+                }
+
+                // Prevent the form being submitted ever:
+                filterable_input.form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
+                 // Check for presence of a reset button:
+                var filterable_reset = filterable_form.querySelector('[filterable_reset]');
+                if (filterable_reset) {
+                    filterable_reset.addEventListener('click', function(e) {
+                        filterability.filterList(filterable_group, '');
                     });
                 }
 
@@ -147,11 +189,27 @@
                                 filterability.filterable_index_names.indexOf(filterable_toggle.getAttribute('filterable_toggle')) > -1
                              || filterable_toggle.getAttribute('filterable_toggle') === ''
                             ) {
+                                // Add the event listener:
                                 filterable_toggle.addEventListener('change', function() {
                                     filterability.toggle_index(filterable_group, this.getAttribute('filterable_toggle'));
                                     filterability.generateIndex(filterable_group);
                                     filterability.filterList(filterable_group, filterable_input.value);
+
+                                    // Add value to sessionStorage:
+                                    window.sessionStorage.setItem(filterable_input.id + '.filterable_toggle', this.getAttribute('filterable_toggle'));
                                 });
+
+                                // Check the sessionStorage and query string parameter to see if one should be checked:
+                                var toggle_val = window.sessionStorage.getItem(filterable_input.id + '.filterable_toggle');
+
+                                var qs_toggle;
+                                if (qs_toggle = getParameterByName(filterable_input.id + '.filterable_toggle')) {
+                                    toggle_val = qs_toggle;
+                                }
+
+                                if (toggle_val && toggle_val == filterable_toggle.getAttribute('filterable_toggle')) {
+                                    filterable_toggle.click();
+                                }
                             }
                         }
                     });
@@ -179,6 +237,18 @@
                         }
                     });
                 }
+
+                // Allow values pre-filled by the browser to update the list:
+                window.setTimeout(function(){
+                    //filterability.filterList(filterable_group, filterable_input.value);
+                    if (filterable_submit) {
+                        filterable_submit.click();
+                    } else {
+                        //console.log(filterable_input);
+                        //filterable_input.focus();
+                        filterable_input.dispatchEvent(new KeyboardEvent('keyup',{'key':'13'}));
+                    }
+                }, 100);
             });
 
         },
@@ -241,7 +311,7 @@
             Array.prototype.forEach.call(items, function(item, i) {
                 // Apply exclusions:
                 var skip = false;
-                if (group.exclusions.length > 0) {
+                if (group.exclusions && group.exclusions.length > 0) {
                     Array.prototype.forEach.call(group.exclusions.keys, function(ex_el_name) {
                         Array.prototype.forEach.call(group.exclusions[ex_el_name], function(ex_match) {
                             var re = new RegExp(ex_match);
