@@ -164,6 +164,10 @@
                 if (filterable_reset) {
                     filterable_reset.addEventListener('click', function(e) {
                         filterability.filterList(filterable_group, '');
+
+                        // Clear the sessionStorage:
+                        window.sessionStorage.removeItem(filterable_input.id);
+                        window.sessionStorage.removeItem(filterable_input.id + '.filterable_toggle');
                     });
                 }
 
