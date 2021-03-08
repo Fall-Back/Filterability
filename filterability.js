@@ -470,7 +470,7 @@
                 if (regex.test(str_to_test)) {
                     item.removeAttribute('hidden');
 
-                    item.setAttribute('filterable_visibile_item', odd_even);
+                    item.setAttribute('filterable_visible_item', odd_even);
                     odd_even = odd_even == 'odd' ? 'even' : 'odd';
 
                     // Check we want to highlight results:
