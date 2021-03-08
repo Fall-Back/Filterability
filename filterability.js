@@ -27,7 +27,7 @@
         }
         return result;
     };
-    
+
     var setSelectValues = function(select, values) {
         var options = select && select.options;
         var opt;
@@ -56,10 +56,10 @@
 
     var resetPreset = function(form) {
         els = form.querySelectorAll('[filterable_preset]');
-        
+
         Array.prototype.forEach.call(els, function(el, i) {
             var el_tagName = el.tagName.toLowerCase();
-            
+
             if (el_tagName == 'select') {
                 setSelectValues(el, []);
             } else if (el_tagName == 'input' && (el.getAttribute('type') == 'checkbox' || el.getAttribute('type') == 'radio')) {
@@ -276,38 +276,38 @@
                         }
                     });
                 }
-                
+
                 // Check for presence of a reset button:
                 var filterable_reset = filterable_form.querySelector('[filterable_reset]');
                 if (filterable_reset) {
                     filterable_reset.addEventListener('click', function(e) {
-                        
+
                         // Force the reset now:
                         e.target.form.reset();
-                        
+
                         // Clear the sessionStorage:
                         window.sessionStorage.removeItem(filterable_input.id);
                         window.sessionStorage.removeItem(filterable_input.id + '.filterable_toggle');
-                        
+
                         // 'Reset' doesn't re-trigger the toggler stuff, so do that here:
                         var event = document.createEvent('HTMLEvents');
-                        event.initEvent('change', true, false);  
-                        
+                        event.initEvent('change', true, false);
+
                         var toggler_selects = filterable_form.querySelectorAll('select[filterable_toggle]');
                         Array.prototype.forEach.call(toggler_selects, function(toggler_select, i) {
                             toggler_select.dispatchEvent(event);
                         });
-                        
+
                         var toggler_checkradios = filterable_form.querySelectorAll('[filterable_toggle]:checked');
                         Array.prototype.forEach.call(toggler_checkradios, function(toggler_checkradio, i) {
-                            
+
                             console.log(toggler_checkradio);
                             toggler_checkradio.dispatchEvent(event);
                         });
 
-                        
+
                         filterability.filterList(filterable_group, '');
-                        
+
                     });
                 }
 
@@ -332,29 +332,29 @@
 
                             if (el_tagName == 'select') {
                                 var selected_values = getSelectValues(el);
-                                
+
                                 resetPreset(el.form);
                                 setSelectValues(el, selected_values);
-                                
+
                                 filterable_input.value = selected_values.join('|');
                             } else if (el_tagName == 'input' && el.getAttribute('type') == 'checkbox') {
                                 // Get all check boxes with the same name as they're series:
                                 var values = [];
                                 var el_name = el.getAttribute('name');
-                                
+
                                 var checkboxes = filterable_form.querySelectorAll('input[name="' + el_name + '"]:checked');
                                 Array.prototype.forEach.call(checkboxes, function(checkbox, i) {
                                     values.push(checkbox.value);
                                 });
-                                
+
                                 resetPreset(el.form);
                                 Array.prototype.forEach.call(checkboxes, function(checkbox, i) {
                                     if(values.indexOf(checkbox.value) !== -1) {
                                         checkbox.checked = true;
                                     }
                                 });
-                                
-                                
+
+
                                 filterable_input.value = values.join('|');
                             } else {
                                 filterable_input.value = el.value;
@@ -423,7 +423,11 @@
                     });
                 }
 
-                item.setAttribute('filterable_index_string', index_string.toLowerCase().trim());
+                // Tidy index string:
+                index_string = index_string.toLowerCase().trim();
+                index_string = index_string.replace(/\s{2,}/g, '');
+
+                item.setAttribute('filterable_index_string', index_string);
             });
         },
 
@@ -431,6 +435,7 @@
 
             query = query.toLowerCase().trim();
             var items = group.items;
+            var odd_even = 'odd';
 
             Array.prototype.forEach.call(items, function(item, i) {
                 // Apply exclusions:
@@ -465,12 +470,14 @@
                 if (regex.test(str_to_test)) {
                     item.removeAttribute('hidden');
 
+                    item.setAttribute('filterable_visibile_item', odd_even);
+                    odd_even = odd_even == 'odd' ? 'even' : 'odd';
+
                     // Check we want to highlight results:
                     if (group.getAttribute('filterable_mark_results') === '') {
                         //filterability.debounce(filterability.highlight_results(item, query), 250);
                         filterability.debounce(filterability.highlight_results(item, regex, str_to_test), 250);
                     }
-
                 } else {
                     item.setAttribute('hidden', '');
                 }
