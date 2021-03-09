@@ -317,10 +317,21 @@
                 }, 100);
 
 
-                // Add behviour to preset inputs:
+                // Add behaviour to preset inputs:
                 var preset_inputs = filterable_form.querySelectorAll('[filterable_preset]');
 
                 if (preset_inputs.length > 0) {
+
+                    /* I'm not sure I really need a form input for this, but leave here for reference:
+                    // Add a hidden input to store the preset origin so we can restore the form
+                    // element UI state accross page loads:
+                    var preset_origin = document.createElement('input');
+                    preset_origin.setAttribute('type', 'hidden');
+                    preset_origin.setAttribute('filterable_input_preset_origin', '');
+
+                    filterable_form.querySelector('form').appendChild(preset_origin);
+                    */
+
                     Array.prototype.forEach.call(preset_inputs, function(preset_input, i) {
 
                         preset_input.addEventListener('change', function(e) {
@@ -337,6 +348,7 @@
                                 setSelectValues(el, selected_values);
 
                                 filterable_input.value = selected_values.join('|');
+
                             } else if (el_tagName == 'input' && el.getAttribute('type') == 'checkbox') {
                                 // Get all check boxes with the same name as they're series:
                                 var values = [];
@@ -360,8 +372,34 @@
                                 filterable_input.value = el.value;
                             }
 
+                            // Store the preset origin:
+                            //preset_origin.value = el.name;
+                            window.sessionStorage.setItem(filterable_input.preset_origin, el.name);
+
                             filterability.trigger_filter(filterable_submit, filterable_input);
                         });
+
+                        // If the prest origin has been set, update the form UI:
+                        /*if (
+                            window.sessionStorage.getItem(filterable_input.preset_origin) == preset_input.name
+                         || preset_origin.value == preset_input.name
+                        ) {*/
+                        if (window.sessionStorage.getItem(filterable_input.preset_origin) == preset_input.name) {
+                            
+                            // This element was recorded as the preset origin.
+                            
+                            var existing_value = filterable_input.value;
+                            var existing_value_array = existing_value.split('|');
+                            var el_tagName = preset_input.tagName.toLowerCase();
+                            
+                            if (el_tagName == 'select') {
+                                setSelectValues(preset_input, existing_value_array);
+                            } else if (el_tagName == 'input' && preset_input.getAttribute('type') == 'checkbox') {
+                                if (existing_value_array.indexOf(preset_input.value) !== -1) {
+                                    preset_input.checked = true;
+                                }
+                            }
+                        }
 
                     });
                 }
