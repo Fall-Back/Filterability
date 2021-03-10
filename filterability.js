@@ -282,32 +282,31 @@
                 if (filterable_reset) {
                     filterable_reset.addEventListener('click', function(e) {
 
-                        // Force the reset now:
-                        e.target.form.reset();
+                        // We need this to happen AFTER reset has completed, so use a timeout:
+                        setTimeout(function() {
+                            // Clear the sessionStorage:
+                            window.sessionStorage.removeItem(filterable_input.id);
+                            window.sessionStorage.removeItem(filterable_input.id + '.filterable_toggle');
 
-                        // Clear the sessionStorage:
-                        window.sessionStorage.removeItem(filterable_input.id);
-                        window.sessionStorage.removeItem(filterable_input.id + '.filterable_toggle');
+                            // 'Reset' doesn't re-trigger the toggler stuff, so do that here:
+                            var event = document.createEvent('HTMLEvents');
+                            event.initEvent('change', true, false);
 
-                        // 'Reset' doesn't re-trigger the toggler stuff, so do that here:
-                        var event = document.createEvent('HTMLEvents');
-                        event.initEvent('change', true, false);
+                            var toggler_selects = filterable_form.querySelectorAll('select[filterable_toggle]');
+                            Array.prototype.forEach.call(toggler_selects, function(toggler_select, i) {
+                                toggler_select.dispatchEvent(event);
+                            });
 
-                        var toggler_selects = filterable_form.querySelectorAll('select[filterable_toggle]');
-                        Array.prototype.forEach.call(toggler_selects, function(toggler_select, i) {
-                            toggler_select.dispatchEvent(event);
-                        });
+                            var toggler_checkradios = filterable_form.querySelectorAll('[filterable_toggle]:checked');
+                            Array.prototype.forEach.call(toggler_checkradios, function(toggler_checkradio, i) {
 
-                        var toggler_checkradios = filterable_form.querySelectorAll('[filterable_toggle]:checked');
-                        Array.prototype.forEach.call(toggler_checkradios, function(toggler_checkradio, i) {
-
-                            console.log(toggler_checkradio);
-                            toggler_checkradio.dispatchEvent(event);
-                        });
+                                console.log(toggler_checkradio);
+                                toggler_checkradio.dispatchEvent(event);
+                            });
 
 
-                        filterability.filterList(filterable_group, '');
-
+                            filterability.filterList(filterable_group, '');
+                        }, 1);
                     });
                 }
 
