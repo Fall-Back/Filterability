@@ -384,13 +384,13 @@
                          || preset_origin.value == preset_input.name
                         ) {*/
                         if (window.sessionStorage.getItem(filterable_input.preset_origin) == preset_input.name) {
-                            
+
                             // This element was recorded as the preset origin.
-                            
+
                             var existing_value = filterable_input.value;
                             var existing_value_array = existing_value.split('|');
                             var el_tagName = preset_input.tagName.toLowerCase();
-                            
+
                             if (el_tagName == 'select') {
                                 setSelectValues(preset_input, existing_value_array);
                             } else if (el_tagName == 'input' && preset_input.getAttribute('type') == 'checkbox') {
@@ -491,6 +491,7 @@
                 }
 
                 item.removeAttribute('hidden');
+                item.removeAttribute('filterable_visible_item');
                 if (skip) {
                     item.setAttribute('hidden', '');
                     return;
@@ -503,7 +504,6 @@
                 var regex = new RegExp('(' + query + ')', 'g');
                 var str_to_test = item.getAttribute('filterable_index_string');
 
-                //if (item.getAttribute('filterable_index_string').indexOf(query) > -1) {
                 if (regex.test(str_to_test)) {
                     item.removeAttribute('hidden');
 
@@ -512,7 +512,6 @@
 
                     // Check we want to highlight results:
                     if (group.getAttribute('filterable_mark_results') === '') {
-                        //filterability.debounce(filterability.highlight_results(item, query), 250);
                         filterability.debounce(filterability.highlight_results(item, regex, str_to_test), 250);
                     }
                 } else {
@@ -528,9 +527,12 @@
             // After filtering, if a list is empty, show the 'empty' message:
             var lists = group.querySelectorAll('[filterable_list]');
             Array.prototype.forEach.call(lists, function(list, i) {
-                var list_is_empty = !list.querySelectorAll('[filterable_item]:not([hidden])').length;
+                var n_items       = list.querySelectorAll('[filterable_item]:not([hidden])').length;
+                var list_is_empty = !n_items;
                 var empty_message = list.nextElementSibling;
                 // @TODO: should probably check the we've really selected a `filterable_empty_list_message`
+
+                list.setAttribute('filterable_visibile_items', n_items);
 
                 if (list_is_empty) {
                     list.setAttribute('hidden', '');
