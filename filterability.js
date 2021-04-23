@@ -410,7 +410,26 @@
             if (filterable_submit) {
                 filterable_submit.click();
             } else {
-                filterable_input.dispatchEvent(new KeyboardEvent('keyup',{'key':'13'}));
+                var kbd_evt;
+                
+                try {
+                    kbd_evt = new KeyboardEvent('keyup', {'key': '13', 'bubbles': true});
+                } catch (e) {
+                    kbd_evt = document.createEvent('KeyboardEvent');
+                    kbd_evt.initKeyboardEvent(
+                        'keyup',
+                        false,
+                        false,
+                        null,
+                        '13',
+                        0,
+                        '',
+                        false,
+                        ''
+                    );
+                }
+                
+                filterable_input.dispatchEvent(kbd_evt);
             }
         },
 
