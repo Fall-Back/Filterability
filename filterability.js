@@ -198,10 +198,12 @@
                 }
 
                 // Prevent the form being submitted ever:
-                filterable_input.form.addEventListener('submit', function(e) {
+                // - No a form may have a legitmate need to be be filterable AND be submitted.
+                // - use input[type="button"] to prevent submits instead.
+                /*filterable_input.form.addEventListener('submit', function(e) {
                     e.preventDefault();
                     return false;
-                });
+                });*/
 
 
                 // Toggler stuff:
