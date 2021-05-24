@@ -68,6 +68,18 @@
         });
     };
 
+    var triggerEvent = function(element, event_type) {
+
+        console.log(element, event_type);
+        setTimeout(function() {
+            var event = document.createEvent('Event');
+            event.initEvent(event_type, true, false);
+            element.dispatchEvent(event);
+        }, 1);
+        
+
+    }
+
     var filterability = {
 
         markjs_error_raised: false,
@@ -165,6 +177,10 @@
                 if (input_val = getParameterByName(filterable_input.id)) {
                     filterable_input.value = input_val;
                 }
+                
+                // Trigger change event not natively fired:
+                triggerEvent(filterable_input, 'change');
+
 
                 // Check for presence of a submit button:
                 var filterable_submit = filterable_form.querySelector('[filterable_submit]');
@@ -372,6 +388,9 @@
                             } else {
                                 filterable_input.value = el.value;
                             }
+                            
+                            // Trigger change event not natively fired:
+                            triggerEvent(filterable_input, 'change');
 
                             // Store the preset origin:
                             //preset_origin.value = el.name;
