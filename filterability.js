@@ -70,7 +70,7 @@
 
     var triggerEvent = function(element, event_type) {
 
-        console.log(element, event_type);
+        //console.log(element, event_type);
         setTimeout(function() {
             var event = document.createEvent('Event');
             event.initEvent(event_type, true, false);
@@ -250,7 +250,7 @@
                                     filterability.generateIndex(filterable_group);
                                     filterability.filterList(filterable_group, filterable_input.value);
 
-                                    console.log(el_tagName + ' toggler ' + el_type);
+                                    //console.log(el_tagName + ' toggler ' + el_type);
 
                                     // Add value to sessionStorage:
                                     window.sessionStorage.setItem(filterable_input.id + '.filterable_toggle', this.getAttribute('filterable_toggle'));
@@ -318,7 +318,7 @@
                             var toggler_checkradios = filterable_form.querySelectorAll('[filterable_toggle]:checked');
                             Array.prototype.forEach.call(toggler_checkradios, function(toggler_checkradio, i) {
 
-                                console.log(toggler_checkradio);
+                                //console.log(toggler_checkradio);
                                 toggler_checkradio.dispatchEvent(event);
                             });
 
