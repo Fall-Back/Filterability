@@ -1,7 +1,7 @@
 /*!
     Filterability v0.0.1
     https://github.com/Fall-Back/Filterability
-    Copyright (c) 2017, Andy Kirk
+    Copyright (c) 2022, Andy Kirk
     Released under the MIT license https://git.io/vwTVl
 */
 (function() {
@@ -148,14 +148,12 @@
                     filterable_empty_list = filterable_empty_list_element.outerHTML;
                 }
 
-                // I can't remember why I assumed there could be more than one list in a group, but
-                // I really can't see how there could be, so changing this to assume a single list:
-                //var filterable_lists = filterable_group.querySelectorAll('[filterable_list]');
-                //Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
-                //    filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
-                //});
-                var filterable_list = filterable_group.querySelector('[filterable_list]');
-                filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
+                // There may be more than one list in a group (for example if there were 
+                // sub-headings within a larger group of lists
+                var filterable_lists = filterable_group.querySelectorAll('[filterable_list]');
+                Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
+                    filterable_list.insertAdjacentHTML('afterend', filterable_empty_list);
+                });
 
 
                 if (typeof form_added  === 'string') {
@@ -443,17 +441,19 @@
                 //var config = { attributes: true, childList: true, subtree: true };
                 var config = {childList: true};
 
-                // Callback function to execute when mutations are observed
-                var callback = function(mutationsList, observer) {
-                    observe_list(filterable_list);
-                };
+                Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
+                    
+                    // Callback function to execute when mutations are observed
+                    var callback = function(mutationsList, observer) {
+                        observe_list(filterable_list);
+                    };
+                    
+                    // Create an observer instance linked to the callback function
+                    var observer = new MutationObserver(callback);
 
-                // Create an observer instance linked to the callback function
-                var observer = new MutationObserver(callback);
-
-                // Start observing the target node for configured mutations
-                observer.observe(filterable_list, config);
-
+                    // Start observing the target node for configured mutations
+                    observer.observe(filterable_list, config);
+                });
 
             });
 
