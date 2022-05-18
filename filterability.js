@@ -1,5 +1,5 @@
 /*!
-    Filterability v0.0.1
+    Filterability v1.0.0
     https://github.com/Fall-Back/Filterability
     Copyright (c) 2022, Andy Kirk
     Released under the MIT license https://git.io/vwTVl
@@ -148,7 +148,7 @@
                     filterable_empty_list = filterable_empty_list_element.outerHTML;
                 }
 
-                // There may be more than one list in a group (for example if there were 
+                // There may be more than one list in a group (for example if there were
                 // sub-headings within a larger group of lists
                 var filterable_lists = filterable_group.querySelectorAll('[filterable_list]');
                 Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
@@ -442,12 +442,12 @@
                 var config = {childList: true};
 
                 Array.prototype.forEach.call(filterable_lists, function(filterable_list, i) {
-                    
+
                     // Callback function to execute when mutations are observed
                     var callback = function(mutationsList, observer) {
                         observe_list(filterable_list);
                     };
-                    
+
                     // Create an observer instance linked to the callback function
                     var observer = new MutationObserver(callback);
 
@@ -605,6 +605,11 @@
                 // @TODO: should probably check the we've really selected a `filterable_empty_list_message`
 
                 list.setAttribute('filterable_visibile_items', n_items);
+
+                var counter = group.querySelector('[filterable_counter]');
+                if (counter) {
+                    counter.innerHTML = n_items;
+                }
 
                 if (list_is_empty) {
                     list.setAttribute('hidden', '');
